@@ -1,48 +1,76 @@
 function showDownloadLinks(fmtUrlList)
 {
-    const fmtText = {
-        '5'  : 'Download (FLV, 400 x 240, Mono 44KHz MP3)',
-        '6'  : 'Download (FLV, 480 x 270, Mono 44KHz MP3)',
-        '34' : 'Download (FLV, 640 x 360, Stereo 44KHz AAC)',
-        '35' : 'Download (FLV, 854 x 480, Stereo 44KHz AAC)',
-
-        '13' : 'Download (3GP, 176 x 144, Stereo 44KHz AAC)',
-        '17' : 'Download (3GP, 176 x 144, Stereo 44KHz AAC)',
-
-        '18' : 'Download (MP4, 640 x 360, Stereo 44KHz AAC)',
-        '22' : 'Download (MP4, 1280 x 720, Stereo 44KHz AAC)',
-        '37' : 'Download (MP4, 1920 x 1080, Stereo 44KHz AAC)',
-        '38' : 'Download (MP4, 4096 x 3072, Stereo 44KHz AAC)',
-
-        '83' : '[3D] Download (MP4, 850 x 240, Stereo 44KHz AAC)',
-        '82' : '[3D] Download (MP4, 640 x 360, Stereo 44KHz AAC)',
-        '85' : '[3D] Download (MP4, 1920 x 520, Stereo 44KHz AAC)',
-        '84' : '[3D] Download (MP4, 1280 x 720, Stereo 44KHz AAC)',
-
-        '43' : 'Watch online (WebM, 640 x 360, Stereo 44KHz Vorbis)',
-        '44' : 'Watch online (WebM, 854 x 480, Stereo 44KHz Vorbis)',
-        '45' : 'Watch online (WebM, 1280 x 720, Stereo 44KHz Vorbis)',
-
-        '100': '[3D] Watch online (WebM, 640 x 360, Stereo 44KHz Vorbis)',
-        '101': '[3D] Watch online (WebM, 854 x 480, Stereo 44KHz Vorbis)',
-        '46' : '[3D] Watch online (WebM, 1920 x 540, Stereo 44KHz Vorbis)',
-        '102': '[3D] Watch online (WebM, 1280 x 720, Stereo 44KHz Vorbis)'
-    };
-
-    fmtUrlList.sort(function (a, b)
-    {
-        return a.itag - b.itag;
-    });
+    const videoTypes = {
+        'FLV': {
+            '5' : '224p',
+            '6' : '270p',
+            '34': '360p',
+            '35': '480p'
+        },
+        'MP4': {
+            '18' : '360p',
+            '22' : '720p',
+            '37' : '1080p',
+            '38' : '2304p'
+        },
+        'MP4 (3D)': {
+            '83' : '240p',
+            '82' : '360p',
+            '85' : '520p',
+            '84' : '720p'
+        },
+        'WebM': {
+            '43' : '360p',
+            '44' : '480p',
+            '45' : '720p'
+        },
+        'WebM (3D)': {
+            '100' : '360p',
+            '101' : '480p',
+            '46'  : '540p',
+            '102' : '720p'
+        }
+    }
 
     var links = $('<ul>').attr({
         id: 'download-list',
-        style: 'display: none; margin-bottom: 10px'
+        style: 'background: #FFF; display: none; margin-bottom: 10px'
     });
 
-    for (var index in fmtUrlList)
+    for (var type in videoTypes)
     {
-        var text = fmtText[fmtUrlList[index].itag];
-        links = links.append('<li><a href="' + fmtUrlList[index].url + '">' + text + '</a></li>');
+        var videoList = [];
+        for (var itag in videoTypes[type])
+        {
+            if (itag in fmtUrlList)
+            {
+                videoList[videoList.length] = {
+                    'name': videoTypes[type][itag],
+                    'url' : fmtUrlList[itag]
+                };
+            }
+        }
+
+        if (videoList.length > 0)
+        {
+            item = $('<li>').attr({
+                'style': 'padding: 3px 10px'
+            });
+
+            item.append($('<span>').attr({
+                'style': 'display: inline-block; width: 80px'
+            }).append(type + ':'));
+
+            for (index in videoList)
+            {
+                item.append($('<a>').attr({
+                    'href': videoList[index].url,
+                    'style': 'display: inline-block; width: 40px'
+                }).append(videoList[index].name));
+            }
+
+            links = links.append(item);
+        }
     }
 
     var button = $('<button>').attr({
@@ -72,17 +100,13 @@ function parseVideoInfo(videoInfo)
     var fmtStreamMap = unescape(fmtStreamMapPattern.exec(videoInfo)[1]);
     var fmtStreamList = fmtStreamMap.split(',');
 
-    var fmtUrlList = new Array();
+    var fmtUrlList = {};
     for (var index in fmtStreamList)
     {
         var urlMatch = fmtUrlParrern.exec(fmtStreamList[index]);
         var itagMatch = fmtITagParrern.exec(fmtStreamList[index]);
-        fmtUrlList.push({
-            url: unescape(urlMatch[1]),
-            itag: itagMatch[1]
-        });
+        fmtUrlList[itagMatch[1]] = unescape(urlMatch[1]);
     }
-    console.log(fmtUrlList);
 
     return fmtUrlList;
 }
