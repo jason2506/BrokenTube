@@ -111,10 +111,24 @@ function parseVideoInfo(videoInfo)
     return fmtUrlList;
 }
 
+function getVideoInfo(url, success)
+{
+    const videoIdPattern = /v=(\w+)/;
+    var videoId = videoIdPattern.exec(url)[1];
+    $.ajax({
+        url: 'http://www.youtube.com/get_video_info',
+        data: { video_id: videoId, eurl: url },
+        success: success,
+    });
+}
+
 $(document).ready(function()
 {
-    videoInfo = $('#movie_player').attr('flashvars');
-    fmtUrlList = parseVideoInfo(videoInfo);
-    showDownloadLinks(fmtUrlList);
+    var url = document.location.href;
+    getVideoInfo(url, function(videoInfo, textStatus, jqXHR)
+    {
+        fmtUrlList = parseVideoInfo(videoInfo);
+        showDownloadLinks(fmtUrlList);
+    });
 });
 
