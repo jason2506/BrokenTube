@@ -91,13 +91,11 @@ function showDownloadLinks(fmtUrlList)
     });
 }
 
-function parseVideoInfo(videoInfo)
+function createFmtUrlList(fmtStreamMap)
 {
-    const fmtStreamMapPattern = /url_encoded_fmt_stream_map=([^&]+)/;
     const fmtUrlParrern = /url=([^&]+)/;
     const fmtITagParrern = /itag=(\d+)/;
 
-    var fmtStreamMap = unescape(fmtStreamMapPattern.exec(videoInfo)[1]);
     var fmtStreamList = fmtStreamMap.split(',');
 
     var fmtUrlList = {};
@@ -111,25 +109,13 @@ function parseVideoInfo(videoInfo)
     return fmtUrlList;
 }
 
-function getVideoInfo(url, success)
-{
-    const videoIdPattern = /v=([^&]+)/;
-    var videoId = videoIdPattern.exec(url)[1];
-    console.log(videoId);
-    $.ajax({
-        url: 'http://www.youtube.com/get_video_info',
-        data: { video_id: videoId, eurl: url },
-        success: success,
-    });
-}
-
 $(document).ready(function()
 {
-    var url = document.location.href;
-    getVideoInfo(url, function(videoInfo, textStatus, jqXHR)
-    {
-        fmtUrlList = parseVideoInfo(videoInfo);
-        showDownloadLinks(fmtUrlList);
-    });
+    const fmtStreamMapPattern = /"url_encoded_fmt_stream_map": "([^"]+)"/;
+
+    var script = $('script:contains(\'url_encoded_fmt_stream_map\')')[0].text;
+    var fmtStreamMap = fmtStreamMapPattern.exec(script)[1];
+    var fmtUrlList = createFmtUrlList(fmtStreamMap);
+    showDownloadLinks(fmtUrlList);
 });
 
