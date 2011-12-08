@@ -113,8 +113,9 @@ function parseVideoInfo(videoInfo)
 
 function getVideoInfo(url, success)
 {
-    const videoIdPattern = /v=(\w+)/;
+    const videoIdPattern = /v=([^&]+)/;
     var videoId = videoIdPattern.exec(url)[1];
+    console.log(videoId);
     $.ajax({
         url: 'http://www.youtube.com/get_video_info',
         data: { video_id: videoId, eurl: url },
