@@ -1,8 +1,8 @@
-# MyTube
+# BrokenTube
 
 ## Screenshots
 
-![Screenshots](http://dl.dropbox.com/u/10533595/MyTube.png)
+![Screenshots](http://dl.dropbox.com/u/10533595/BrokenTube.png)
 
 ## License
 
