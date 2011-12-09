@@ -3,9 +3,9 @@
     "version": "1.0.4",
     "description": "Google Chrome extension that adds a button to YouTube page and makes downloading the videos easier.",
     "icons": {
-        "128": "icon_128.png",
-         "48": "icon_48.png",
-         "16": "icon_16.png"
+        "128": "icons/icon_128.png",
+         "48": "icons/icon_48.png",
+         "16": "icons/icon_16.png"
     },
     "content_scripts": [{
         "matches": ["http://www.youtube.com/watch*"],
