@@ -96,7 +96,8 @@ function createFmtUrlList(fmtStreamMap)
     const fmtUrlParrern = /url=([^&]+)/;
     const fmtITagParrern = /itag=(\d+)/;
 
-    var fmtStreamList = fmtStreamMap.split(',');
+    var fmtStreamList = fmtStreamMap.replace(/\\u0026/g, '&').split(',');
+    console.log(fmtStreamList);
 
     var fmtUrlList = {};
     for (var index in fmtStreamList)
