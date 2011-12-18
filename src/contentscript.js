@@ -93,16 +93,16 @@ function showDownloadLinks(fmtUrlList)
 
 function createFmtUrlList(fmtStreamMap)
 {
-    const fmtUrlParrern = /url=([^&]+)/;
-    const fmtITagParrern = /itag=(\d+)/;
+    const fmtUrlPattern = /url=([^&]+)/;
+    const fmtITagPattern = /itag=(\d+)/;
 
     var fmtStreamList = fmtStreamMap.replace(/\\u0026/g, '&').split(',');
 
     var fmtUrlList = {};
     for (var index in fmtStreamList)
     {
-        var urlMatch = fmtUrlParrern.exec(fmtStreamList[index]);
-        var itagMatch = fmtITagParrern.exec(fmtStreamList[index]);
+        var urlMatch = fmtUrlPattern.exec(fmtStreamList[index]);
+        var itagMatch = fmtITagPattern.exec(fmtStreamList[index]);
         fmtUrlList[itagMatch[1]] = unescape(urlMatch[1]);
     }
 
