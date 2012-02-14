@@ -75,7 +75,7 @@ function showDownloadLinks(fmtUrlList)
 
     var button = $('<button>').attr({
         'id': 'download-button',
-        'class': 'yt-uix-tooltip-reverse yt-uix-button yt-uix-tooltip',
+        'class': 'yt-uix-tooltip-reverse yt-uix-button yt-uix-button-default yt-uix-tooltip',
         'data-tooltip': '下載此影片',
         'data-tooltip-text': '下載此影片'
     }).append($('<span>下載</span>').addClass('yt-uix-button-content'));
@@ -113,7 +113,7 @@ $(document).ready(function()
 {
     const fmtStreamMapPattern = /"url_encoded_fmt_stream_map": "([^"]+)"/;
 
-    var script = $('script:contains(\'url_encoded_fmt_stream_map\')')[0].text;
+    var script = $('script:contains(\'"url_encoded_fmt_stream_map"\')')[0].text;
     var fmtStreamMap = fmtStreamMapPattern.exec(script)[1];
     var fmtUrlList = createFmtUrlList(fmtStreamMap);
     showDownloadLinks(fmtUrlList);
