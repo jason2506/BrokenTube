@@ -2,7 +2,7 @@
 
 ## Screenshots
 
-![Screenshots](http://dl.dropbox.com/u/10533595/BrokenTube.png)
+![Screenshots](https://github.com/jason2506/BrokenTube/raw/master/BrokenTube.png)
 
 ## License
 
