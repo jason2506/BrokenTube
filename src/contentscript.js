@@ -1,5 +1,4 @@
-function showDownloadLinks(fmtUrlList)
-{
+function showDownloadLinks(fmtUrlList) {
     const videoTypes = {
         'FLV': {
             '5' : '224p',
@@ -30,20 +29,17 @@ function showDownloadLinks(fmtUrlList)
             '46'  : '540p',
             '102' : '720p'
         }
-    }
+    };
 
     var links = $('<ul>').attr({
         id: 'download-list',
         style: 'background: #FFF; display: none; margin-bottom: 10px'
     });
 
-    for (var type in videoTypes)
-    {
+    for (var type in videoTypes) {
         var videoList = [];
-        for (var itag in videoTypes[type])
-        {
-            if (itag in fmtUrlList)
-            {
+        for (var itag in videoTypes[type]) {
+            if (itag in fmtUrlList) {
                 videoList[videoList.length] = {
                     'name': videoTypes[type][itag],
                     'url' : fmtUrlList[itag]
@@ -51,8 +47,7 @@ function showDownloadLinks(fmtUrlList)
             }
         }
 
-        if (videoList.length > 0)
-        {
+        if (videoList.length > 0) {
             item = $('<li>').attr({
                 'style': 'padding: 3px 10px'
             });
@@ -61,8 +56,7 @@ function showDownloadLinks(fmtUrlList)
                 'style': 'display: inline-block; width: 80px'
             }).append(type + ':'));
 
-            for (index in videoList)
-            {
+            for (var index in videoList) {
                 item.append($('<a>').attr({
                     'href': videoList[index].url,
                     'style': 'display: inline-block; width: 40px'
@@ -83,24 +77,21 @@ function showDownloadLinks(fmtUrlList)
     $('#watch-share').after(button);
     $('#watch-actions').after(links);
 
-    $('#download-button').click(function()
-    {
+    $('#download-button').click(function() {
         if ($('#download-list').css('display') == 'none')
             $('#download-list').css('display', 'block');
         else $('#download-list').css('display', 'none');
     });
 }
 
-function createFmtUrlList(fmtStreamMap)
-{
+function createFmtUrlList(fmtStreamMap) {
     const fmtUrlPattern = /url=([^&]+)/;
     const fmtITagPattern = /itag=(\d+)/;
 
     var fmtStreamList = fmtStreamMap.replace(/\\u0026/g, '&').split(',');
 
     var fmtUrlList = {};
-    for (var index in fmtStreamList)
-    {
+    for (var index in fmtStreamList) {
         var urlMatch = fmtUrlPattern.exec(fmtStreamList[index]);
         var itagMatch = fmtITagPattern.exec(fmtStreamList[index]);
         fmtUrlList[itagMatch[1]] = unescape(urlMatch[1]);
@@ -109,8 +100,7 @@ function createFmtUrlList(fmtStreamMap)
     return fmtUrlList;
 }
 
-$(document).ready(function()
-{
+$(document).ready(function() {
     const fmtStreamMapPattern = /"url_encoded_fmt_stream_map": "([^"]+)"/;
 
     var script = $('script:contains(\'"url_encoded_fmt_stream_map"\')')[0].text;
