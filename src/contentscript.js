@@ -87,14 +87,18 @@ function showDownloadLinks(fmtUrlList) {
 function createFmtUrlList(fmtStreamMap) {
     const fmtUrlPattern = /url=([^&]+)/;
     const fmtITagPattern = /itag=(\d+)/;
+    const fmtSigPattern = /sig=([^&]+)/;
 
-    var fmtStreamList = fmtStreamMap.replace(/\\u0026/g, '&').split(',');
+    var fmtStreamList = fmtStreamMap
+        .replace(/\\u0026/g, '&')
+        .split(',');
 
     var fmtUrlList = {};
     for (var index in fmtStreamList) {
         var urlMatch = fmtUrlPattern.exec(fmtStreamList[index]);
         var itagMatch = fmtITagPattern.exec(fmtStreamList[index]);
-        fmtUrlList[itagMatch[1]] = unescape(urlMatch[1]);
+        var sigMatch = fmtSigPattern.exec(fmtStreamList[index]);
+        fmtUrlList[itagMatch[1]] = unescape(urlMatch[1] + '&signature=' + sigMatch[1]);
     }
 
     return fmtUrlList;
