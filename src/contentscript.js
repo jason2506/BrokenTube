@@ -31,11 +31,7 @@ function showDownloadLinks(fmtUrlList) {
         }
     };
 
-    var links = $('<ul>').attr({
-        id: 'download-list',
-        style: 'background: #FFF; display: none; margin-bottom: 10px'
-    });
-
+    var links = $('<ul>').attr('id', 'download-list');
     for (var type in videoTypes) {
         var videoList = [];
         for (var itag in videoTypes[type]) {
@@ -67,21 +63,23 @@ function showDownloadLinks(fmtUrlList) {
         }
     }
 
-    var button = $('<button>').attr({
-        'id': 'download-button',
-        'class': 'yt-uix-tooltip-reverse yt-uix-button yt-uix-button-default yt-uix-tooltip',
-        'data-tooltip': '下載此影片',
-        'data-tooltip-text': '下載此影片'
-    }).append($('<span>下載</span>').addClass('yt-uix-button-content'));
+    var panel = $('<div>').attr({
+        'id': 'action-panel-download',
+        'class': 'action-panel-content hid',
+        'data-panel-loaded': 'true'
+    }).append($('<div>').attr({
+        'id': 'watch-actions-download',
+        'class': 'watch-actions-panel'
+    }).append(links));
+    $('#action-panel-details').after(panel);
 
-    $('#watch-share').after(button);
-    $('#watch-actions').after(links);
-
-    $('#download-button').click(function() {
-        if ($('#download-list').css('display') == 'none')
-            $('#download-list').css('display', 'block');
-        else $('#download-list').css('display', 'none');
-    });
+    var anchor = $('#watch7-secondary-actions').find('span').first();
+    var botton = anchor.clone();
+    botton.find('button')
+        .attr('data-trigger-for', 'action-panel-download')
+        .removeClass('yt-uix-button-toggled');
+    botton.find('span').text('下載');
+    anchor.after(botton);
 }
 
 function createFmtUrlList(fmtStreamMap) {
