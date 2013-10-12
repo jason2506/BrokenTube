@@ -1,6 +1,6 @@
 {
     "name": "BrokenTube",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "manifest_version": 2,
     "description": "Google Chrome extension that adds a button to YouTube page and makes downloading the videos easier.",
     "update_url": "https://raw.github.com/jason2506/BrokenTube/master/updates.xml",
@@ -10,7 +10,7 @@
          "16": "icons/icon_16.png"
     },
     "content_scripts": [{
-        "matches": ["http://www.youtube.com/watch*"],
+        "matches": ["*://www.youtube.com/watch*"],
         "js": [
             "jquery.js",
             "contentscript.js"
