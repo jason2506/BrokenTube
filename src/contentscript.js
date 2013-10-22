@@ -74,13 +74,13 @@ function showDownloadLinks(fmtUrlList) {
             });
 
             item.append($('<span>').attr({
-                'style': 'display: inline-block; width: 80px'
+                'style': 'display: inline-block; width: 120px'
             }).append(type + ':'));
 
             for (var index in videoList) {
                 item.append($('<a>').attr({
                     'href': videoList[index].url,
-                    'style': 'display: inline-block; width: 40px'
+                    'style': 'display: inline-block; width: 50px'
                 }).append(videoList[index].name));
             }
 
