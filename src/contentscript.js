@@ -58,16 +58,9 @@ const fmtSigPattern = /sig=([^&]+)/;
 function showDownloadLinks(fmtUrlList) {
     var links = $('<ul>').attr('id', 'download-list');
     for (var type in videoTypes) {
-        var videoList = [];
-        for (var idx in videoTypes[type]) {
-            var fmt = videoTypes[type][idx];
-            if (fmt.i in fmtUrlList) {
-                videoList[videoList.length] = {
-                    'name': fmt.n,
-                    'url' : fmtUrlList[fmt.i]
-                };
-            }
-        }
+        var videoList = videoTypes[type].filter(function (fmt) {
+            return fmt.i in fmtUrlList;
+        });
 
         if (videoList.length > 0) {
             item = $('<li>').attr({
@@ -79,10 +72,11 @@ function showDownloadLinks(fmtUrlList) {
             }).append(type + ':'));
 
             for (var index in videoList) {
+                var fmt = videoList[index];
                 item.append($('<a>').attr({
-                    'href': videoList[index].url,
+                    'href': fmtUrlList[fmt.i],
                     'style': 'display: inline-block; width: 50px'
-                }).append(videoList[index].name));
+                }).append(fmt.n));
             }
 
             links = links.append(item);
