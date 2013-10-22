@@ -1,3 +1,5 @@
+(function() {
+
 const videoTypes = {
     'FLV': {
         '5' : '224p',
@@ -143,3 +145,4 @@ $(document).ready(function() {
     showDownloadLinks(fmtUrlList);
 });
 
+})();
