@@ -1,52 +1,52 @@
 (function() {
 
 const videoTypes = {
-    'FLV': {
-        '5' : '224p',
-        '6' : '270p',
-        '34': '360p',
-        '35': '480p'
-    },
-    '3GP': {
-        '17' : '144p',
-        '36' : '240p'
-    },
-    'MP4': {
-        '18' : '360p',
-        '22' : '720p',
-        '37' : '1080p',
-        '38' : '2304p'
-    },
-    'MP4 (3D)': {
-        '83' : '240p',
-        '82' : '360p',
-        '85' : '520p',
-        '84' : '720p'
-    },
-    'MP4 (video-only)': {
-        '160' : '144p',
-        '133' : '240p',
-        '134' : '360p',
-        '135' : '480p',
-        '136' : '720p',
-        '137' : '1080p'
-    },
-    'MP4 (audio-only)': {
-        '139' : '48kbs',
-        '140' : '128kbs',
-        '141' : '256kbs'
-    },
-    'WebM': {
-        '43' : '360p',
-        '44' : '480p',
-        '45' : '720p'
-    },
-    'WebM (3D)': {
-        '100' : '360p',
-        '101' : '480p',
-        '46'  : '540p',
-        '102' : '720p'
-    }
+    'FLV': [
+        { i: '5', n: '224p' },
+        { i: '6', n: '270p' },
+        { i: '34', n: '360p' },
+        { i: '35', n: '480p' }
+    ],
+    '3GP': [
+        { i: '17', n: '144p' },
+        { i: '36', n: '240p' }
+    ],
+    'MP4': [
+        { i: '18', n: '360p' },
+        { i: '22', n: '720p' },
+        { i: '37', n: '1080p' },
+        { i: '38', n: '2304p' }
+    ],
+    'MP4 (3D)': [
+        { i: '83', n: '240p' },
+        { i: '82', n: '360p' },
+        { i: '85', n: '520p' },
+        { i: '84', n: '720p' }
+    ],
+    'MP4 (video-only)': [
+        { i: '160', n: '144p' },
+        { i: '133', n: '240p' },
+        { i: '134', n: '360p' },
+        { i: '135', n: '480p' },
+        { i: '136', n: '720p' },
+        { i: '137', n: '1080p' }
+    ],
+    'MP4 (audio-only)': [
+        { i: '139', n: '48kbs' },
+        { i: '140', n: '128kbs' },
+        { i: '141', n: '256kbs' }
+    ],
+    'WebM': [
+        { i: '43', n: '360p' },
+        { i: '44', n: '480p' },
+        { i: '45', n: '720p' }
+    ],
+    'WebM (3D)': [
+        { i: '100', n: '360p' },
+        { i: '101', n: '480p' },
+        { i: '46', n: '540p' },
+        { i: '102', n: '720p' }
+    ]
 };
 
 const fmtStreamMapPattern = /"url_encoded_fmt_stream_map": "([^"]+)"/;
@@ -59,11 +59,12 @@ function showDownloadLinks(fmtUrlList) {
     var links = $('<ul>').attr('id', 'download-list');
     for (var type in videoTypes) {
         var videoList = [];
-        for (var itag in videoTypes[type]) {
-            if (itag in fmtUrlList) {
+        for (var idx in videoTypes[type]) {
+            var fmt = videoTypes[type][idx];
+            if (fmt.i in fmtUrlList) {
                 videoList[videoList.length] = {
-                    'name': videoTypes[type][itag],
-                    'url' : fmtUrlList[itag]
+                    'name': fmt.n,
+                    'url' : fmtUrlList[fmt.i]
                 };
             }
         }
