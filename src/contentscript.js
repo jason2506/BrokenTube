@@ -53,7 +53,7 @@ const fmtStreamMapPattern = /"url_encoded_fmt_stream_map": "([^"]+)"/;
 const adaptiveFmtStreamMapPattern = /"adaptive_fmts": "([^"]+)"/;
 const fmtITagPattern = /itag=(\d+)/;
 const fmtUrlPattern = /url=([^&]+)/;
-const fmtSigPattern = /sig=([^&]+)/;
+const fmtSigPattern = /s=([^&]+)/;
 
 function showDownloadLinks(fmtUrlList) {
     var links = $('<ul>').attr('id', 'download-list');
@@ -102,6 +102,10 @@ function showDownloadLinks(fmtUrlList) {
     anchor.after(botton);
 }
 
+function extractSig(s) {
+    return s.slice(5, 56) + s[3] + s.slice(57);
+}
+
 function extractUrl(text) {
     var urlMatch = fmtUrlPattern.exec(text);
     return unescape(urlMatch[1]);
@@ -109,7 +113,8 @@ function extractUrl(text) {
 
 function extractUrlWithSig(text) {
     var sigMatch = fmtSigPattern.exec(text);
-    return extractUrl(text) + '&signature=' + unescape(sigMatch[1]);
+    sig = extractSig(sigMatch[1]);
+    return extractUrl(text) + '&signature=' + sig;
 }
 
 function createFmtUrlList(fmtStreamMap, urlExtractor, fmtUrlList) {
@@ -135,7 +140,7 @@ $(document).ready(function() {
     createFmtUrlList(fmtStreamMap, extractUrlWithSig, fmtUrlList);
 
     var adaptiveFmtStreamMap = adaptiveFmtStreamMapPattern.exec(script)[1];
-    createFmtUrlList(adaptiveFmtStreamMap, extractUrl, fmtUrlList);
+    createFmtUrlList(adaptiveFmtStreamMap, extractUrlWithSig, fmtUrlList);
 
     showDownloadLinks(fmtUrlList);
 });
