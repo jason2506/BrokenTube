@@ -55,7 +55,7 @@ const fmtITagPattern = /itag=(\d+)/;
 const fmtUrlPattern = /url=([^&]+)/;
 const fmtSigPattern = /s=([^&]+)/;
 
-function showDownloadLinks(fmtUrlList) {
+function showDownloadLinks(title, fmtUrlList) {
     var links = $('<ul>').attr('id', 'download-list');
     for (var type in videoTypes) {
         var videoList = videoTypes[type].filter(function (fmt) {
@@ -74,7 +74,7 @@ function showDownloadLinks(fmtUrlList) {
             for (var index in videoList) {
                 var fmt = videoList[index];
                 item.append($('<a>').attr({
-                    'href': fmtUrlList[fmt.i],
+                    'href': fmtUrlList[fmt.i] + '&title=' + title,
                     'style': 'display: inline-block; width: 50px'
                 }).append(fmt.n));
             }
@@ -100,6 +100,10 @@ function showDownloadLinks(fmtUrlList) {
         .removeClass('yt-uix-button-toggled');
     botton.find('span').text('下載');
     anchor.after(botton);
+}
+
+function extractTitle() {
+    return encodeURIComponent($('#eow-title').attr('title')).replace(/%20/g, '+');
 }
 
 function extractSig(s) {
@@ -133,6 +137,7 @@ function createFmtUrlList(fmtStreamMap, urlExtractor, fmtUrlList) {
 }
 
 $(document).ready(function() {
+    var title = extractTitle();
     var script = $('script:contains(\'"url_encoded_fmt_stream_map"\')')[0].text;
     var fmtUrlList = {};
 
@@ -142,7 +147,7 @@ $(document).ready(function() {
     var adaptiveFmtStreamMap = adaptiveFmtStreamMapPattern.exec(script)[1];
     createFmtUrlList(adaptiveFmtStreamMap, extractUrlWithSig, fmtUrlList);
 
-    showDownloadLinks(fmtUrlList);
+    showDownloadLinks(title, fmtUrlList);
 });
 
 })();
