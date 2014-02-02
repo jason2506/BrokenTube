@@ -92,7 +92,9 @@ function extractUrl(text) {
 }
 
 function decodeSig(s) {
-    return s.slice(5, 56) + s[3] + s.slice(57);
+    s = s[22] + s.slice(4, 22) + s[3] + s.slice(23, 38) + s[0] +
+        s.slice(39, 65) + s[83] + s.slice(66, 83) + s[65];
+    return s.split('').reverse().join('');
 }
 
 function extractUrlWithSig(text) {
