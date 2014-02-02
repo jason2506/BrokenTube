@@ -1,6 +1,4 @@
-(function() {
-
-const videoTypes = {
+const VIDEO_TYPES = {
     'FLV': [
         { i: '5', n: '224p' },
         { i: '6', n: '270p' },
@@ -49,105 +47,208 @@ const videoTypes = {
     ]
 };
 
-const fmtStreamMapPattern = /"url_encoded_fmt_stream_map": "([^"]+)"/;
-const adaptiveFmtStreamMapPattern = /"adaptive_fmts": "([^"]+)"/;
-const fmtITagPattern = /itag=(\d+)/;
-const fmtUrlPattern = /url=([^&]+)/;
-const fmtSigPattern = /s=([^&]+)/;
+const FMT_STREAM_MAP_PTN = /"url_encoded_fmt_stream_map": "([^"]+)"/;
+const ADAPTIVE_FMT_STREAM_MAP_PTN = /"adaptive_fmts": "([^"]+)"/;
+const FMT_ITAG_PTN = /itag=(\d+)/;
+const FMT_URL_PTN = /url=([^&]+)/;
+const FMT_SIG_PTN = /sig=([^&]+)/;
+const FMT_ENCODED_SIG_PTN = /s=([^&]+)/;
 
-function showDownloadLinks(title, fmtUrlList) {
-    var links = $('<ul>').attr('id', 'download-list');
-    for (var type in videoTypes) {
-        var videoList = videoTypes[type].filter(function (fmt) {
-            return fmt.i in fmtUrlList;
-        });
-
-        if (videoList.length > 0) {
-            item = $('<li>').attr({
-                'style': 'padding: 3px 10px'
-            });
-
-            item.append($('<span>').attr({
-                'style': 'display: inline-block; width: 120px'
-            }).append(type + ':'));
-
-            for (var index in videoList) {
-                var fmt = videoList[index];
-                item.append($('<a>').attr({
-                    'href': fmtUrlList[fmt.i] + '&title=' + title,
-                    'style': 'display: inline-block; width: 50px'
-                }).append(fmt.n));
-            }
-
-            links = links.append(item);
-        }
+function insertAfter(element, target) {
+    var parent = target.parentNode;
+    if (parent.lastChild === target) {
+        parent.appendChild(element);
     }
-
-    var panel = $('<div>').attr({
-        'id': 'action-panel-download',
-        'class': 'action-panel-content hid',
-        'data-panel-loaded': 'true'
-    }).append($('<div>').attr({
-        'id': 'watch-actions-download',
-        'class': 'watch-actions-panel'
-    }).append(links));
-    $('#action-panel-details').after(panel);
-
-    var anchor = $('#watch7-secondary-actions').find('span').first();
-    var botton = anchor.clone();
-    botton.find('button')
-        .attr('data-trigger-for', 'action-panel-download')
-        .removeClass('yt-uix-button-toggled');
-    botton.find('span').text('下載');
-    anchor.after(botton);
+    else {
+        parent.insertBefore(element, target.nextSibling);
+    }
 }
 
 function extractTitle() {
-    return encodeURIComponent($('#eow-title').attr('title')).replace(/%20/g, '+');
+    var meta = document.querySelector('meta[name="title"]'),
+        title = meta.getAttribute('content');
+    return encodeURIComponent(title);
 }
 
-function extractSig(s) {
-    return s.slice(5, 56) + s[3] + s.slice(57);
+function extractScript() {
+    var scripts,
+        content,
+        length,
+        index;
+
+    scripts = document.getElementsByTagName('script');
+    length = scripts.length;
+    for (index = 0; index < length; index++) {
+        content = scripts[index].textContent;
+        if (content.indexOf('url_encoded_fmt_stream_map') >= 0) {
+            return content;
+        }
+    }
 }
 
 function extractUrl(text) {
-    var urlMatch = fmtUrlPattern.exec(text);
-    return unescape(urlMatch[1]);
+    var urlMatch = FMT_URL_PTN.exec(text);
+    return decodeURIComponent(urlMatch[1]);
+}
+
+function decodeSig(s) {
+    return s.slice(5, 56) + s[3] + s.slice(57);
 }
 
 function extractUrlWithSig(text) {
-    var sigMatch = fmtSigPattern.exec(text);
-    sig = extractSig(sigMatch[1]);
-    return extractUrl(text) + '&signature=' + sig;
+    var sigMatch,
+        url;
+
+    url = extractUrl(text);
+    if ((sigMatch = FMT_SIG_PTN.exec(text)) !== null) {
+        url += '&signature=' + sigMatch[1];
+    }
+    else if ((sigMatch = FMT_ENCODED_SIG_PTN.exec(text)) !== null) {
+        url += '&signature=' + decodeSig(sigMatch[1]);
+    }
+
+    return url;
 }
 
-function createFmtUrlList(fmtStreamMap, urlExtractor, fmtUrlList) {
-    var fmtStreamList = fmtStreamMap
+function appendFmtUrlList(fmtStreamMap, fmtUrlList) {
+    var fmtStreamList,
+        index,
+        text,
+        itagMatch;
+
+    fmtStreamList = fmtStreamMap
         .replace(/\\u0026/g, '&')
         .split(',');
 
     fmtUrlList = fmtUrlList || {};
-    for (var index in fmtStreamList) {
-        var text = fmtStreamList[index];
-        var itagMatch = fmtITagPattern.exec(text);
-        fmtUrlList[itagMatch[1]] = urlExtractor(text);
+    for (index in fmtStreamList) {
+        text = fmtStreamList[index];
+        itagMatch = FMT_ITAG_PTN.exec(text);
+        fmtUrlList[itagMatch[1]] = extractUrlWithSig(text);
     }
 
     return fmtUrlList;
 }
 
-$(document).ready(function() {
-    var title = extractTitle();
-    var script = $('script:contains(\'"url_encoded_fmt_stream_map"\')')[0].text;
-    var fmtUrlList = {};
+function createLinksItem(title, videoList, fmtUrlList) {
+    var item,
+        header,
+        link,
+        length,
+        index,
+        fmt,
+        url;
 
-    var fmtStreamMap = fmtStreamMapPattern.exec(script)[1];
-    createFmtUrlList(fmtStreamMap, extractUrlWithSig, fmtUrlList);
+    header = document.createElement('span');
+    header.setAttribute('style', 'display: inline-block; width: 120px');
+    header.textContent = title + ':';
 
-    var adaptiveFmtStreamMap = adaptiveFmtStreamMapPattern.exec(script)[1];
-    createFmtUrlList(adaptiveFmtStreamMap, extractUrlWithSig, fmtUrlList);
+    item = document.createElement('li');
+    item.setAttribute('style', 'padding: 3px 10px');
+    item.appendChild(header);
+
+    length = videoList.length;
+    for (index = 0; index < length; index++) {
+        fmt = videoList[index];
+        url = fmtUrlList[fmt.i];
+
+        link = document.createElement('a');
+        link.setAttribute('style', 'display: inline-block; width: 50px');
+        link.setAttribute('href', url);
+        link.textContent = fmt.n;
+        item.appendChild(link);
+    }
+
+    return item;
+}
+
+function createPanel(links) {
+    var panel,
+        panelWrapper;
+
+    panel = document.createElement('div');
+    panel.id = 'watch-actions-download';
+    panel.className = 'watch-actions-panel';
+    panel.appendChild(links);
+
+    panelWrapper = document.createElement('div');
+    panelWrapper.id = 'action-panel-download';
+    panelWrapper.className = 'action-panel-content hid';
+    panelWrapper.setAttribute('data-panel-loaded', 'true');
+    panelWrapper.appendChild(panel);
+
+    return panelWrapper;
+}
+
+function cloneButton(buttonWrapper) {
+    var newButtonWrapper,
+        button,
+        buttonText;
+
+    newButtonWrapper = buttonWrapper.cloneNode(true);
+
+    button = newButtonWrapper.getElementsByTagName('button')[0];
+    button.setAttribute('data-trigger-for', 'action-panel-download');
+    button.classList.remove('yt-uix-button-toggled');
+
+    buttonText = newButtonWrapper.getElementsByTagName('span')[0];
+    buttonText.textContent = '下載';
+
+    return newButtonWrapper;
+}
+
+function showDownloadLinks(title, fmtUrlList) {
+    var type,
+        videoList,
+        inUrlList,
+        links,
+        item,
+        panelBefore,
+        panel,
+        buttonBefore,
+        button;
+
+    inUrlList = function(fmt) {
+        return fmt.i in fmtUrlList;
+    };
+
+    links = document.createElement('ul');
+    links.id = 'download-list';
+    for (type in VIDEO_TYPES) {
+        videoList = VIDEO_TYPES[type].filter(inUrlList);
+        if (!videoList.length) { continue; }
+
+        item = createLinksItem(type, videoList, fmtUrlList);
+        links.appendChild(item);
+    }
+
+    panel = createPanel(links);
+    panelBefore = document.getElementById('action-panel-details');
+    insertAfter(panel, panelBefore);
+
+    buttonBefore = document.querySelector('#watch7-secondary-actions span');
+    button = cloneButton(buttonBefore);
+    insertAfter(button, buttonBefore);
+}
+
+function ready() {
+    var title,
+        script,
+        fmtUrlList,
+        fmtStreamMap,
+        adaptiveFmtStreamMap;
+
+    title = extractTitle();
+    script = extractScript();
+    fmtUrlList = {};
+
+    fmtStreamMap = FMT_STREAM_MAP_PTN.exec(script)[1];
+    appendFmtUrlList(fmtStreamMap, fmtUrlList);
+
+    adaptiveFmtStreamMap = ADAPTIVE_FMT_STREAM_MAP_PTN.exec(script)[1];
+    appendFmtUrlList(adaptiveFmtStreamMap, fmtUrlList);
 
     showDownloadLinks(title, fmtUrlList);
-});
+}
 
-})();
+ready();
