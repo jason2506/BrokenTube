@@ -141,7 +141,7 @@ function extractUrlWithSig(text) {
     return url;
 }
 
-function createFmtUrlList(fmtStreamMap, urlExtractor, fmtUrlList) {
+function createFmtUrlList(fmtStreamMap, fmtUrlList) {
     var fmtStreamList,
         index,
         text,
@@ -155,7 +155,7 @@ function createFmtUrlList(fmtStreamMap, urlExtractor, fmtUrlList) {
     for (index in fmtStreamList) {
         text = fmtStreamList[index];
         itagMatch = FMT_ITAG_PTN.exec(text);
-        fmtUrlList[itagMatch[1]] = urlExtractor(text);
+        fmtUrlList[itagMatch[1]] = extractUrlWithSig(text);
     }
 
     return fmtUrlList;
@@ -173,10 +173,10 @@ $(document).ready(function() {
     fmtUrlList = {};
 
     fmtStreamMap = FMT_STREAM_MAP_PTN.exec(script)[1];
-    createFmtUrlList(fmtStreamMap, extractUrlWithSig, fmtUrlList);
+    createFmtUrlList(fmtStreamMap, fmtUrlList);
 
     adaptiveFmtStreamMap = ADAPTIVE_FMT_STREAM_MAP_PTN.exec(script)[1];
-    createFmtUrlList(adaptiveFmtStreamMap, extractUrlWithSig, fmtUrlList);
+    createFmtUrlList(adaptiveFmtStreamMap, fmtUrlList);
 
     showDownloadLinks(title, fmtUrlList);
 });
