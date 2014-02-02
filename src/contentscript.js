@@ -53,7 +53,8 @@ const FMT_STREAM_MAP_PTN = /"url_encoded_fmt_stream_map": "([^"]+)"/;
 const ADAPTIVE_FMT_STREAM_MAP_PTN = /"adaptive_fmts": "([^"]+)"/;
 const FMT_ITAG_PTN = /itag=(\d+)/;
 const FMT_URL_PTN = /url=([^&]+)/;
-const FMT_SIG_PTN = /s=([^&]+)/;
+const FMT_SIG_PTN = /sig=([^&]+)/;
+const FMT_ENCODED_SIG_PTN = /s=([^&]+)/;
 
 function showDownloadLinks(title, fmtUrlList) {
     var links,
@@ -126,9 +127,18 @@ function extractUrl(text) {
 }
 
 function extractUrlWithSig(text) {
-    var sigMatch = FMT_SIG_PTN.exec(text),
-        sig = extractSig(sigMatch[1]);
-    return extractUrl(text) + '&signature=' + sig;
+    var sigMatch,
+        url;
+
+    url = extractUrl(text);
+    if ((sigMatch = FMT_SIG_PTN.exec(text)) !== null) {
+        url += '&signature=' + sigMatch[1];
+    }
+    else if ((sigMatch = FMT_ENCODED_SIG_PTN.exec(text)) !== null) {
+        url += '&signature=' + extractSig(sigMatch[1]);
+    }
+
+    return url;
 }
 
 function createFmtUrlList(fmtStreamMap, urlExtractor, fmtUrlList) {
