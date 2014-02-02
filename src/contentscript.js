@@ -1,5 +1,3 @@
-(function() {
-
 const VIDEO_TYPES = {
     'FLV': [
         { i: '5', n: '224p' },
@@ -66,104 +64,35 @@ function insertAfter(element, target) {
     }
 }
 
-function showDownloadLinks(title, fmtUrlList) {
-    var type,
-        index,
-        videoList,
-        inUrlList,
-        fmt,
-        url,
-        links,
-        item,
-        newItem,
-        header,
-        newHeader,
-        link,
-        newLink,
-        panelWrapperBefore,
-        panelWrapper,
-        panel,
-        buttonWrapperBefore,
-        buttonWrapper,
-        button,
-        buttonText;
-
-    inUrlList = function(fmt) {
-        return fmt.i in fmtUrlList;
-    };
-
-    links = document.createElement('ul');
-    links.id = 'download-list';
-
-    item = document.createElement('li');
-    item.setAttribute('style', 'padding: 3px 10px');
-
-    header = document.createElement('span');
-    header.setAttribute('style', 'display: inline-block; width: 120px');
-
-    link = document.createElement('a');
-    link.setAttribute('style', 'display: inline-block; width: 50px');
-
-    for (type in VIDEO_TYPES) {
-        videoList = VIDEO_TYPES[type].filter(inUrlList);
-        if (!videoList.length) { continue; }
-
-        newItem = item.cloneNode();
-        newHeader = header.cloneNode();
-        newHeader.textContent = type + ':';
-        newItem.appendChild(newHeader);
-        for (index in videoList) {
-            fmt = videoList[index];
-            url = fmtUrlList[fmt.i] + '&title=' + title;
-            newLink = link.cloneNode();
-            newLink.setAttribute('href', url);
-            newLink.textContent = fmt.n;
-            newItem.appendChild(newLink);
-        }
-
-        links.appendChild(newItem);
-    }
-
-    panel = document.createElement('div');
-    panel.id = 'watch-actions-download';
-    panel.className = 'watch-actions-panel';
-    panel.appendChild(links);
-
-    panelWrapper = document.createElement('div');
-    panelWrapper.id = 'action-panel-download';
-    panelWrapper.className = 'action-panel-content hid';
-    panelWrapper.setAttribute('data-panel-loaded', 'true');
-    panelWrapper.appendChild(panel);
-
-    panelWrapperBefore = document.getElementById('action-panel-details');
-    insertAfter(panelWrapper, panelWrapperBefore);
-
-    buttonWrapperBefore = document.querySelector('#watch7-secondary-actions span');
-    buttonWrapper = buttonWrapperBefore.cloneNode(true);
-
-    button = buttonWrapper.getElementsByTagName('button')[0];
-    button.setAttribute('data-trigger-for', 'action-panel-download');
-    button.classList.remove('yt-uix-button-toggled');
-
-    buttonText = buttonWrapper.getElementsByTagName('span')[0];
-    buttonText.textContent = '下載';
-
-    insertAfter(buttonWrapper, buttonWrapperBefore);
-}
-
 function extractTitle() {
     var meta = document.querySelector('meta[name="title"]'),
         title = meta.getAttribute('content');
     return encodeURIComponent(title);
 }
 
-function extractSig(s) {
-    return s.slice(5, 56) + s[3] + s.slice(57);
+function extractScript() {
+    var scripts,
+        content,
+        length,
+        index;
+
+    scripts = document.getElementsByTagName('script');
+    length = scripts.length;
+    for (index = 0; index < length; index++) {
+        content = scripts[index].textContent;
+        if (content.indexOf('url_encoded_fmt_stream_map') >= 0) {
+            return content;
+        }
+    }
 }
 
 function extractUrl(text) {
     var urlMatch = FMT_URL_PTN.exec(text);
     return decodeURIComponent(urlMatch[1]);
+}
+
+function decodeSig(s) {
+    return s.slice(5, 56) + s[3] + s.slice(57);
 }
 
 function extractUrlWithSig(text) {
@@ -175,13 +104,13 @@ function extractUrlWithSig(text) {
         url += '&signature=' + sigMatch[1];
     }
     else if ((sigMatch = FMT_ENCODED_SIG_PTN.exec(text)) !== null) {
-        url += '&signature=' + extractSig(sigMatch[1]);
+        url += '&signature=' + decodeSig(sigMatch[1]);
     }
 
     return url;
 }
 
-function createFmtUrlList(fmtStreamMap, fmtUrlList) {
+function appendFmtUrlList(fmtStreamMap, fmtUrlList) {
     var fmtStreamList,
         index,
         text,
@@ -201,20 +130,105 @@ function createFmtUrlList(fmtStreamMap, fmtUrlList) {
     return fmtUrlList;
 }
 
-function getScript() {
-    var scripts,
-        content,
+function createLinksItem(title, videoList, fmtUrlList) {
+    var item,
+        header,
+        link,
         length,
-        index;
+        index,
+        fmt,
+        url;
 
-    scripts = document.getElementsByTagName('script');
-    length = scripts.length;
+    header = document.createElement('span');
+    header.setAttribute('style', 'display: inline-block; width: 120px');
+    header.textContent = title + ':';
+
+    item = document.createElement('li');
+    item.setAttribute('style', 'padding: 3px 10px');
+    item.appendChild(header);
+
+    length = videoList.length;
     for (index = 0; index < length; index++) {
-        content = scripts[index].textContent;
-        if (content.indexOf('url_encoded_fmt_stream_map') >= 0) {
-            return content;
-        }
+        fmt = videoList[index];
+        url = fmtUrlList[fmt.i];
+
+        link = document.createElement('a');
+        link.setAttribute('style', 'display: inline-block; width: 50px');
+        link.setAttribute('href', url);
+        link.textContent = fmt.n;
+        item.appendChild(link);
     }
+
+    return item;
+}
+
+function createPanel(links) {
+    var panel,
+        panelWrapper;
+
+    panel = document.createElement('div');
+    panel.id = 'watch-actions-download';
+    panel.className = 'watch-actions-panel';
+    panel.appendChild(links);
+
+    panelWrapper = document.createElement('div');
+    panelWrapper.id = 'action-panel-download';
+    panelWrapper.className = 'action-panel-content hid';
+    panelWrapper.setAttribute('data-panel-loaded', 'true');
+    panelWrapper.appendChild(panel);
+
+    return panelWrapper;
+}
+
+function cloneButton(buttonWrapper) {
+    var newButtonWrapper,
+        button,
+        buttonText;
+
+    newButtonWrapper = buttonWrapper.cloneNode(true);
+
+    button = newButtonWrapper.getElementsByTagName('button')[0];
+    button.setAttribute('data-trigger-for', 'action-panel-download');
+    button.classList.remove('yt-uix-button-toggled');
+
+    buttonText = newButtonWrapper.getElementsByTagName('span')[0];
+    buttonText.textContent = '下載';
+
+    return newButtonWrapper;
+}
+
+function showDownloadLinks(title, fmtUrlList) {
+    var type,
+        videoList,
+        inUrlList,
+        links,
+        item,
+        panelBefore,
+        panel,
+        buttonBefore,
+        button;
+
+    inUrlList = function(fmt) {
+        return fmt.i in fmtUrlList;
+    };
+
+    links = document.createElement('ul');
+    links.id = 'download-list';
+    for (type in VIDEO_TYPES) {
+        videoList = VIDEO_TYPES[type].filter(inUrlList);
+        if (!videoList.length) { continue; }
+
+        item = createLinksItem(type, videoList, fmtUrlList);
+        links.appendChild(item);
+    }
+
+    panel = createPanel(links);
+    panelBefore = document.getElementById('action-panel-details');
+    insertAfter(panel, panelBefore);
+
+    buttonBefore = document.querySelector('#watch7-secondary-actions span');
+    button = cloneButton(buttonBefore);
+    insertAfter(button, buttonBefore);
 }
 
 function ready() {
@@ -225,18 +239,16 @@ function ready() {
         adaptiveFmtStreamMap;
 
     title = extractTitle();
-    script = getScript();
+    script = extractScript();
     fmtUrlList = {};
 
     fmtStreamMap = FMT_STREAM_MAP_PTN.exec(script)[1];
-    createFmtUrlList(fmtStreamMap, fmtUrlList);
+    appendFmtUrlList(fmtStreamMap, fmtUrlList);
 
     adaptiveFmtStreamMap = ADAPTIVE_FMT_STREAM_MAP_PTN.exec(script)[1];
-    createFmtUrlList(adaptiveFmtStreamMap, fmtUrlList);
+    appendFmtUrlList(adaptiveFmtStreamMap, fmtUrlList);
 
     showDownloadLinks(title, fmtUrlList);
 }
 
 ready();
-
-})();
