@@ -11,10 +11,6 @@
     },
     "content_scripts": [{
         "matches": ["*://www.youtube.com/watch*"],
-        "js": [
-            "jquery.js",
-            "contentscript.js"
-        ]
+        "js": ["contentscript.js"]
     }]
 }
-
