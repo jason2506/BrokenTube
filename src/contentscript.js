@@ -65,9 +65,7 @@ function insertAfter(element, target) {
 }
 
 function extractTitle() {
-    var meta = document.querySelector('meta[name="title"]'),
-        title = meta.getAttribute('content');
-    return encodeURIComponent(title);
+    return document.getElementById('eow-title').textContent;
 }
 
 function extractScript() {
@@ -132,7 +130,7 @@ function appendFmtUrlList(fmtStreamMap, fmtUrlList) {
     return fmtUrlList;
 }
 
-function createLinksItem(title, videoList, fmtUrlList) {
+function createLinksItem(title, headerText, videoList, fmtUrlList) {
     var item,
         header,
         link,
@@ -143,7 +141,7 @@ function createLinksItem(title, videoList, fmtUrlList) {
 
     header = document.createElement('span');
     header.setAttribute('style', 'display: inline-block; width: 120px');
-    header.textContent = title + ':';
+    header.textContent = headerText + ':';
 
     item = document.createElement('li');
     item.setAttribute('style', 'padding: 3px 10px');
@@ -157,6 +155,7 @@ function createLinksItem(title, videoList, fmtUrlList) {
         link = document.createElement('a');
         link.setAttribute('style', 'display: inline-block; width: 50px');
         link.setAttribute('href', url);
+        link.setAttribute('download', title);
         link.textContent = fmt.n;
         item.appendChild(link);
     }
@@ -220,7 +219,7 @@ function showDownloadLinks(title, fmtUrlList) {
         videoList = VIDEO_TYPES[type].filter(inUrlList);
         if (!videoList.length) { continue; }
 
-        item = createLinksItem(type, videoList, fmtUrlList);
+        item = createLinksItem(title, type, videoList, fmtUrlList);
         links.appendChild(item);
     }
 
